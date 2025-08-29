@@ -4,19 +4,33 @@
 Deno.serve(async (req) => {
   // 当服务器收到一个请求 (req) 时，这部分代码会运行。
 
-  // 1. 读取 index.html 文件的内容
-  //    Deno.readTextFile 是一个异步函数，会读取指定文件的文本内容。
-  //    './index.html' 表示读取与 main.ts 文件在同一目录下的 index.html 文件。
-  const htmlContent = await Deno.readTextFile('./index.html');
+  // 1. 解析请求的 URL
+  //    req.url 包含了完整的请求地址，例如 "https://weitianai.cn/cut"
+  //    我们使用 URL 构造函数来方便地获取其中的各个部分。
+  const url = new URL(req.url);
 
-  // 2. 创建一个 HTTP 响应 (Response)
-  //    第一个参数是响应的主体内容，这里就是我们刚读取的HTML字符串。
-  //    第二个参数是一个选项对象，我们在这里设置 HTTP 头 (headers)。
-  return new Response(htmlContent, {
+  // 2. 检查路径是否为 '/cut'
+  //    url.pathname 就是 URL 中域名后面的部分。
+  if (url.pathname === '/cut') {
+    // 如果路径完全匹配 '/cut'，则执行以下操作：
+
+    // 2.1. 读取 index.html 文件的内容
+    const htmlContent = await Deno.readTextFile('./index.html');
+
+    // 2.2. 创建一个成功的 HTTP 响应 (Response)
+    return new Response(htmlContent, {
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+      },
+    });
+  }
+
+  // 3. 如果路径不是 '/cut'，则返回一个 404 Not Found 错误
+  //    这可以防止用户访问根域名 weitianai.cn 或其他不存在的路径时看到你的页面。
+  return new Response('Not Found', {
+    status: 404, // 状态码 404 表示未找到
     headers: {
-      // 告诉浏览器我们发送的是 HTML 内容，并且使用 UTF-8 编码。
-      // 这对于正确显示中文等字符至关重要。
-      'Content-Type': 'text/html; charset=utf-8',
+      'Content-Type': 'text/plain; charset=utf-8',
     },
   });
 });
